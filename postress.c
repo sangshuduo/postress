@@ -17,6 +17,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#define REQ_BUF_LEN     1024
+#define REP_BUF_LEN     4096
+
 void ERROR(const char *msg) { perror(msg); exit(0); }
 
 void HELP() {
@@ -90,9 +93,9 @@ int main(int argc,char *argv[])
     struct hostent *server;
     struct sockaddr_in serv_addr;
     int sockfd, bytes, sent, received, total;
-    char request[1024], response[4096];
+    char request[REQ_BUF_LEN], response[REP_BUF_LEN];
 
-    sprintf(request, req_fmt, url, host, port, auth, strlen(cmd), cmd);
+    snprintf(request, REQ_BUF_LEN, req_fmt, url, host, port, auth, strlen(cmd), cmd);
     printf("Request:\n%s\n", request);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
