@@ -95,7 +95,7 @@ int main(int argc,char *argv[])
     int sockfd, bytes, sent, received, total;
     char request[REQ_BUF_LEN], response[REP_BUF_LEN];
 
-    snprintf(request, REQ_BUF_LEN, req_fmt, url, host, port, auth, strlen(cmd), cmd);
+    snprintf(request, REQ_BUF_LEN-1, req_fmt, url, host, port, auth, strlen(cmd), cmd);
     printf("Request:\n%s\n", request);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
