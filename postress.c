@@ -95,7 +95,9 @@ int main(int argc,char *argv[])
     int sockfd, bytes, sent, received, total;
     char request[REQ_BUF_LEN], response[REP_BUF_LEN];
 
-    snprintf(request, REQ_BUF_LEN-1, req_fmt, url, host, port, auth, strlen(cmd), cmd);
+    int r = snprintf(request, REQ_BUF_LEN, req_fmt, url, host, port, auth, strlen(cmd), cmd);
+    if (r >= REQ_BUF_LEN)
+        ERROR("ERROR too long request");
     printf("Request:\n%s\n", request);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
