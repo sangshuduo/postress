@@ -16,6 +16,8 @@
 #ifdef WINDOWS
     #include <winsock2.h>
     #pragma comment ( lib, "ws2_32.lib" )
+
+    typedef unsigned __int32 uint32_t;
 #else
     #include <unistd.h>
     #include <sys/socket.h>
@@ -101,6 +103,8 @@ int main(int argc,char *argv[])
         snprintf(userpass_buf, INPUT_BUF_LEN, "%s:%s", user, pass);
         size_t userpass_buf_len = strlen(userpass_buf);
         size_t encoded_len = 4 * ((userpass_buf_len +2) / 3);
+
+        memset(base64_buf, 0, INPUT_BUF_LEN);
 
         for (int n = 0, m = 0; n < userpass_buf_len;) {
             uint32_t oct_a = n < userpass_buf_len ? 
