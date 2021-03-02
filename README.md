@@ -1,10 +1,15 @@
 # postress
-* compile postress
+* compile postress on linux
 ```
 gcc postress.c -o postress
 ```
 
+* compile postress on Windows
+```
+cl /DWINDOWS postress.c
+```
 Usage: ./postress -h <hostname> -p <port> -r <rest url> -u <username> -P <password> -a <auth str> -s <command>
+Author: Shuduo Sang <sangshuduo@gmail.com>
 
         -h	specify the host to connect. Default is 127.0.0.1.
         -p	specify The TCP/IP port number to use for the connection. Default is 80.
