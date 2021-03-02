@@ -23,9 +23,18 @@
     #include <netdb.h>
 #endif
 
-
 #define REQ_BUF_LEN     1024
 #define REP_BUF_LEN     4096
+#define INPUT_BUF_LEN   256
+
+static char base64[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+    'w', 'x', 'y', 'z', '0', '1', '2', '3',
+    '4', '5', '6', '7', '8', '9', '+', '/'};
 
 void ERROR_EXIT(const char *msg) { perror(msg); exit(0); }
 
@@ -47,10 +56,12 @@ int main(int argc,char *argv[])
     char *host = "127.0.0.1";
     int port = 80;
     char *url = "";
-    char *user;
-    char *pass;
-    char *auth;
+    char *user = NULL;
+    char *pass = NULL;
+    char *auth = NULL;
     char *cmd;
+    char userpass_buf[INPUT_BUF_LEN];
+    char base64_buf[INPUT_BUF_LEN];
 
     if (argc == 1) {
         HELP();
@@ -80,6 +91,38 @@ int main(int argc,char *argv[])
         }
     }
 
+    if (auth == NULL) {
+        if ((user == NULL) || (pass == NULL)) {
+            ERROR_EXIT("ERROR, please input username and password, or auth string.");
+        }
+
+        int mod_table[] = {0, 2, 1};
+
+        snprintf(userpass_buf, INPUT_BUF_LEN, "%s:%s", user, pass);
+        size_t userpass_buf_len = strlen(userpass_buf);
+        size_t encoded_len = 4 * ((userpass_buf_len +2) / 3);
+
+        for (int n = 0, m = 0; n < userpass_buf_len;) {
+            uint32_t oct_a = n < userpass_buf_len ? 
+                (unsigned char) userpass_buf[n++]:0;
+            uint32_t oct_b = n < userpass_buf_len ? 
+                (unsigned char) userpass_buf[n++]:0;
+            uint32_t oct_c = n < userpass_buf_len ? 
+                (unsigned char) userpass_buf[n++]:0;
+            uint32_t triple = (oct_a << 0x10) + (oct_b << 0x08) + oct_c;
+
+            base64_buf[m++] = base64[(triple >> 3* 6) & 0x3f];
+            base64_buf[m++] = base64[(triple >> 2* 6) & 0x3f];
+            base64_buf[m++] = base64[(triple >> 1* 6) & 0x3f];
+            base64_buf[m++] = base64[(triple >> 0* 6) & 0x3f];
+        }
+
+        for (int l = 0; l < mod_table[userpass_buf_len % 3]; l++)
+            base64_buf[encoded_len - 1 - l] = '=';
+
+        printf("auth string base64 encoded: %s\n", base64_buf);
+        auth = base64_buf;
+    }
 #ifdef WINDOWS
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 1), &wsaData);
@@ -113,7 +156,7 @@ int main(int argc,char *argv[])
         ERROR_EXIT("ERROR connecting");
 
 
-    char *req_fmt = "POST %s HTTP/1.1\r\nHost: %s:%d\r\nUser-Agent: postress/0.1\r\nAccept: */*\r\n%s\r\nContent-Length: %d\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n%s";
+    char *req_fmt = "POST %s HTTP/1.1\r\nHost: %s:%d\r\nUser-Agent: postress/0.1\r\nAccept: */*\r\nAuthorization: Basic %s\r\nContent-Length: %d\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n%s";
 
     int bytes, sent, received, total;
     char request[REQ_BUF_LEN], response[REP_BUF_LEN];
