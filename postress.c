@@ -96,7 +96,7 @@ int main(int argc,char *argv[])
     server = gethostbyname(host);
     if (server == NULL) ERROR_EXIT("ERROR, no such host");
 
-    printf("h_name: %s\nh_addretype: %s\nh_length: %h\n", 
+    printf("h_name: %s\nh_addretype: %s\nh_length: %d\n", 
             server->h_name, (server->h_addrtype == AF_INET)?"ipv4":"ipv6", server->h_length);
 
     memset(&serv_addr,0,sizeof(serv_addr));
