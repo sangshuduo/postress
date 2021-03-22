@@ -11,4 +11,4 @@ jobs:
     steps:
       - uses: tomsun28/issues-translate-action@v2.4
     with:
-          IS_MODIFY_TITLE: false
+          IS_MODIFY_TITLE: true
